@@ -143,7 +143,6 @@ data = {
 current_hour = datetime.now(timezone.utc).hour
 
 if current_hour == fixedHour:
-    print('Correct Timing!')
     fetchData(url)
 else:
     print('Invalid Timing!')
