@@ -1,0 +1,39 @@
+name: Wealth Monitor Schedule
+
+on:
+  schedule:
+    - cron: "* * * * *" # Runs every minute for testing
+
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+      - name: Run script
+        run: |
+          python WealthMonitorBot.py
+      - name: Check if data_log.txt has changed
+        id: check_changes
+        run: |
+          git diff --exit-code data_log.txt || echo "data_log_modified=true" >> $GITHUB_ENV
+      - name: Commit changes
+        if: env.data_log_modified == 'true'
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git add data_log.txt
+          git commit -m "Update data_log.txt with new data"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CHAT_ID: ${{ secrets.CHAT_ID }}
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
