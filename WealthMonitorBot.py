@@ -16,8 +16,9 @@ def saveData(data):
     print("Data written to data_log.")
 
 def sendMsg():
-    bot = telebot.TeleBot(os.getenv('BOT_TOKEN'))
+    bot_token = os.getenv('BOT_TOKEN')
     chat_id = os.getenv('CHAT_ID')
+    bot = telebot.TeleBot(bot_token)
     
     message = f'''Wealth Monitor Bot is here!
 
