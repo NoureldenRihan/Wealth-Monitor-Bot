@@ -4,7 +4,7 @@ import requests
 import os
 import telebot
 
-fixedHour = 4 # GMT/UTC timezone
+fixedHour = 19 # GMT/UTC timezone
 
 def saveData(data):
     file_path = './data_log.txt'
