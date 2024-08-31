@@ -19,6 +19,9 @@ jobs:
         run: |
           pip install -r requirements.txt
       - name: Run script
+        env:
+          CHAT_ID: ${{ secrets.CHAT_ID }}
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
           python WealthMonitorBot.py
       - name: Check if data_log.txt has changed
@@ -35,5 +38,3 @@ jobs:
           git push
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CHAT_ID: ${{ secrets.CHAT_ID }}
-          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
