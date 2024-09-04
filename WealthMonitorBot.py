@@ -6,6 +6,12 @@ import telebot
 
 fixedHour = 19 # GMT/UTC timezone
 
+def calculateDaysLeft(endDate):
+    endDate = datetime.strptime(endDate, "%Y-%m-%d")
+    today = datetime.now()
+    days_left = (endDate - today).days
+    return days_left
+
 def saveData(data):
     file_path = './data_log.txt'
 
@@ -47,6 +53,24 @@ TOTAL:
 Total Wealth (EGP): {data["Total in EGP"]} EGP
 
 Total Wealth (USD): {data["Total in USD"]} USD
+
+GOALS:
+
+Bronze (1K USD/2025): {round(data["Total in USD"] / 1000 ,1)}% {calculateDaysLeft(milestoneDates[0])} Days Left
+
+Silver (3.65K USD/2025): {round(data["Total in USD"] / 3650 ,1)}% {calculateDaysLeft(milestoneDates[1])} Days Left
+
+Gold (10K USD/2026): {round(data["Total in USD"] / 10000 ,1)}% {calculateDaysLeft(milestoneDates[2])} Days Left
+
+Diamond (50K USD/2027): {round(data["Total in USD"] / 50000 ,1)}% {calculateDaysLeft(milestoneDates[3])} Days Left
+
+Platinum (100K USD/2029): {round(data["Total in USD"] / 100000 ,1)}% {calculateDaysLeft(milestoneDates[4])} Days Left
+
+Elite (250K USD/2031): {round(data["Total in USD"] / 250000 ,1)}% {calculateDaysLeft(milestoneDates[5])} Days Left
+
+Champion (500K USD/2033): {round(data["Total in USD"] / 500000 ,1)}% {calculateDaysLeft(milestoneDates[6])} Days Left
+
+Unreal (1M USD/2035): {round(data["Total in USD"] / 1000000 ,1)}% {calculateDaysLeft(milestoneDates[7])} Days Left
     '''
     
     bot.send_message(chat_id, message)
@@ -139,6 +163,16 @@ data = {
     'Total in EGP': 0,
     'Total in USD': 0,
 }
+
+milestoneDates = [
+    "2025-08-24",
+    "2026-08-24",
+    "2027-08-24",
+    "2029-08-24",
+    "2031-08-24",
+    "2033-08-24",
+    "2035-08-24",
+]
 
 current_hour = datetime.now(timezone.utc).hour
 
