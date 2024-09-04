@@ -4,7 +4,7 @@ import requests
 import os
 import telebot
 
-fixedHour = 20 # GMT/UTC timezone
+fixedHour = 22 # GMT/UTC timezone
 
 def calculateDaysLeft(endDate):
     endDate = datetime.strptime(endDate, "%Y-%m-%d")
@@ -56,21 +56,21 @@ Total Wealth (USD): {data["Total in USD"]} USD
 
 GOALS:
 
-Bronze (1K USD/2025): {round(data["Total in USD"] / 1000 ,1)}% {calculateDaysLeft(milestoneDates[0])} Days Left
+Bronze (1K USD/2025): {round((data["Total in USD"] / 1000) * 100 )}% {calculateDaysLeft(milestoneDates[0])} Days Left
 
-Silver (3.65K USD/2025): {round(data["Total in USD"] / 3650 ,1)}% {calculateDaysLeft(milestoneDates[1])} Days Left
+Silver (3.65K USD/2025): {round((data["Total in USD"] / 3650) * 100 )}% {calculateDaysLeft(milestoneDates[1])} Days Left
 
-Gold (10K USD/2026): {round(data["Total in USD"] / 10000 ,1)}% {calculateDaysLeft(milestoneDates[2])} Days Left
+Gold (10K USD/2026): {round((data["Total in USD"] / 10000) * 100 )}% {calculateDaysLeft(milestoneDates[2])} Days Left
 
-Diamond (50K USD/2027): {round(data["Total in USD"] / 50000 ,1)}% {calculateDaysLeft(milestoneDates[3])} Days Left
+Diamond (50K USD/2027): {round((data["Total in USD"] / 50000) * 100 )}% {calculateDaysLeft(milestoneDates[3])} Days Left
 
-Platinum (100K USD/2029): {round(data["Total in USD"] / 100000 ,1)}% {calculateDaysLeft(milestoneDates[4])} Days Left
+Platinum (100K USD/2029): {round((data["Total in USD"] / 100000) * 100)}% {calculateDaysLeft(milestoneDates[4])} Days Left
 
-Elite (250K USD/2031): {round(data["Total in USD"] / 250000 ,1)}% {calculateDaysLeft(milestoneDates[5])} Days Left
+Elite (250K USD/2031): {round((data["Total in USD"] / 250000) * 100)}% {calculateDaysLeft(milestoneDates[5])} Days Left
 
-Champion (500K USD/2033): {round(data["Total in USD"] / 500000 ,1)}% {calculateDaysLeft(milestoneDates[6])} Days Left
+Champion (500K USD/2033): {round((data["Total in USD"] / 500000) * 100)}% {calculateDaysLeft(milestoneDates[6])} Days Left
 
-Unreal (1M USD/2035): {round(data["Total in USD"] / 1000000 ,1)}% {calculateDaysLeft(milestoneDates[7])} Days Left
+Unreal (1M USD/2035): {round((data["Total in USD"] / 1000000) * 100)}% {calculateDaysLeft(milestoneDates[7])} Days Left
     '''
     
     bot.send_message(chat_id, message)
