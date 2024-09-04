@@ -4,7 +4,7 @@ import requests
 import os
 import telebot
 
-fixedHour = 19 # GMT/UTC timezone
+fixedHour = 20 # GMT/UTC timezone
 
 def calculateDaysLeft(endDate):
     endDate = datetime.strptime(endDate, "%Y-%m-%d")
@@ -165,6 +165,7 @@ data = {
 }
 
 milestoneDates = [
+    "2025-08-24",
     "2025-08-24",
     "2026-08-24",
     "2027-08-24",
