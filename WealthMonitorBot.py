@@ -4,13 +4,16 @@ import requests
 import os
 import telebot
 
-fixedHour = 19 # GMT/UTC timezone
+fixedHour = 21 # GMT/UTC timezone
 
 def calculateDaysLeft(endDate):
     endDate = datetime.strptime(endDate, "%Y-%m-%d")
     today = datetime.now()
     days_left = (endDate - today).days
     return days_left
+
+def extractNumbers(string):
+    return ''.join(char for char in string if char.isdigit() or char == '.')
 
 def saveData(data):
     file_path = './data_log.txt'
@@ -45,6 +48,8 @@ CASH:
 Cash (EGP): {storage["EGPCash"]} EGP
 
 Cash (USD): {storage['USDCash']} USD
+
+USD to EGP: {data['USD to EGP']} EGP
 
 Your Total Cash Value: {data["Your Cash Value"]} EGP
 
@@ -91,22 +96,22 @@ def fetchData(url):
 
         # Retreive 24K Gold Price
         K24price = soup.select('div.isagha-panel > div.clearfix > div.col-xs-4 > div.value')[1].text
-        data['24K Egy Gold']['weight'] = round(float(K24price))
+        data['24K Egy Gold']['weight'] = round(float(extractNumbers(K24price)))
         data['24K Egy Gold']['value'] = round(data['24K Egy Gold']['weight'] * storage['24KGold'])
 
         # Retreive 22K Gold Price
         K22price = soup.select('div.isagha-panel > div.clearfix > div.col-xs-4 > div.value')[3].text
-        data['22K Egy Gold']['weight'] = round(float(K22price))
+        data['22K Egy Gold']['weight'] = round(float(extractNumbers(K22price)))
         data['22K Egy Gold']['value'] = round(data['22K Egy Gold']['weight'] * storage['22KGold'])
 
         # Retreive 21K Gold Price
         K21price = soup.select('div.isagha-panel > div.clearfix > div.col-xs-4 > div.value')[6].text
-        data['21K Egy Gold']['weight'] = round(float(K21price))
+        data['21K Egy Gold']['weight'] = round(float(extractNumbers(K21price)))
         data['21K Egy Gold']['value'] = round(data['21K Egy Gold']['weight'] * storage['21KGold'])
 
         # Retreive 18K Gold Price
         K18price = soup.select('div.isagha-panel > div.clearfix > div.col-xs-4 > div.value')[9].text
-        data['18K Egy Gold']['weight'] = round(float(K18price))
+        data['18K Egy Gold']['weight'] = round(float(extractNumbers(K18price)))
         data['18K Egy Gold']['value'] = round(data['18K Egy Gold']['weight'] * storage['18KGold'])
 
         # Add All Gold Values
@@ -114,7 +119,7 @@ def fetchData(url):
 
         # Retreive USD to EGP Price
         USDPrice = soup.select('div.isagha-panel > div.clearfix > div.col-xs-4 > div.value')[-3].text
-        data['USD to EGP']= float(USDPrice)
+        data['USD to EGP']= float(extractNumbers(USDPrice))
 
         # Add All Cash Values
         data['Your Cash Value'] = round((storage['USDCash'] * data['USD to EGP']) + storage['EGPCash'])
