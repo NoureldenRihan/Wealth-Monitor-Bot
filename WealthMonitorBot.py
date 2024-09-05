@@ -4,7 +4,7 @@ import requests
 import os
 import telebot
 
-fixedHour = 21 # GMT/UTC timezone
+fixedHour = 0 # GMT/UTC timezone
 
 def calculateDaysLeft(endDate):
     endDate = datetime.strptime(endDate, "%Y-%m-%d")
@@ -13,7 +13,7 @@ def calculateDaysLeft(endDate):
     return days_left
 
 def extractNumbers(string):
-    return ''.join(char for char in string if char.isdigit() or char == '.')
+    return ''.join(char for char in string if char.isdigit() or char == '.')[:-1]
 
 def saveData(data):
     file_path = './data_log.txt'
