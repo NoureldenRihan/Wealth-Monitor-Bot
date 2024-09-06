@@ -4,7 +4,7 @@ import requests
 import os
 import telebot
 
-fixedHour = 0 # GMT/UTC timezone
+fixedHour = 1 # GMT/UTC timezone
 
 def calculateDaysLeft(endDate):
     endDate = datetime.strptime(endDate, "%Y-%m-%d")
