@@ -442,3 +442,51 @@ Champion (500K USD/2033): 0% 3270 Days Left
 
 Unreal (1M USD/2035): 0% 4000 Days Left
     
+2024-09-10 19:22:24.821138+00:00 - Wealth Monitor Bot is here!
+
+GOLD:
+
+24K: 0.5g x 3857 = 1928 EGP
+
+22K: 0g x 3552 = 0 EGP
+
+21K: 0g x 3390 = 0 EGP
+
+18K: 1g x 2906 = 2906 EGP
+
+Your Total Gold Value: 4834 EGP
+
+CASH:
+
+Cash (EGP): 1000 EGP
+
+Cash (USD): 137.26 USD
+
+USD to EGP: 48.393 EGP
+
+Your Total Cash Value: 7642 EGP
+
+TOTAL:
+
+Total Wealth (EGP): 12476 EGP
+
+Total Wealth (USD): 258 USD
+
+GOALS:
+
+Bronze (1K USD/2025): 26% 347 Days Left
+
+Silver (3.65K USD/2025): 7% 347 Days Left
+
+Gold (10K USD/2026): 3% 712 Days Left
+
+Diamond (50K USD/2027): 1% 1077 Days Left
+
+Platinum (100K USD/2029): 0% 1808 Days Left
+
+Elite (250K USD/2031): 0% 2538 Days Left
+
+Champion (500K USD/2033): 0% 3269 Days Left
+
+Unreal (1M USD/2035): 0% 3999 Days Left
+    
