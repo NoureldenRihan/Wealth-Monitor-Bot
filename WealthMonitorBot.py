@@ -137,12 +137,12 @@ def fetchData(url):
 url = 'https://market.isagha.com/prices'
 
 storage = {
-    '24KGold': 0.5,
-    '22KGold': 0,
-    '21KGold': 0,
-    '18KGold': 1,
-    'EGPCash': 1000,
-    'USDCash': 137.26,
+    '24KGold': os.getenv('G24K'),
+    '22KGold': os.getenv('G22K'),
+    '21KGold': os.getenv('G21K'),
+    '18KGold': os.getenv('G18K'),
+    'EGPCash': os.getenv('EGP_C'),
+    'USDCash': os.getenv('USD_C'),
 }
 
 data = {
