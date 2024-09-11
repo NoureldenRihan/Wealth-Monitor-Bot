@@ -4,7 +4,7 @@ import requests
 import os
 import telebot
 
-fixedHour = 19 # GMT/UTC timezone
+fixedHour = 20 # GMT/UTC timezone
 
 def calculateDaysLeft(endDate):
     endDate = datetime.strptime(endDate, "%Y-%m-%d")
@@ -137,12 +137,12 @@ def fetchData(url):
 url = 'https://market.isagha.com/prices'
 
 storage = {
-    '24KGold': os.getenv('G24K'),
-    '22KGold': os.getenv('G22K'),
-    '21KGold': os.getenv('G21K'),
-    '18KGold': os.getenv('G18K'),
-    'EGPCash': os.getenv('EGP_C'),
-    'USDCash': os.getenv('USD_C'),
+    '24KGold': float(os.getenv('G24K')),
+    '22KGold': float(os.getenv('G22K')),
+    '21KGold': float(os.getenv('G21K')),
+    '18KGold': float(os.getenv('G18K')),
+    'EGPCash': float(os.getenv('EGP_C')),
+    'USDCash': float(os.getenv('USD_C')),
 }
 
 data = {
