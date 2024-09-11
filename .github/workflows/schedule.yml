@@ -22,6 +22,12 @@ jobs:
         env:
           CHAT_ID: ${{ secrets.CHAT_ID }}
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          G24K: ${{ secrets.G24K }}
+          G22K: ${{ secrets.G22K }}
+          G21K: ${{ secrets.G21K }}
+          G18K: ${{ secrets.G18K }}
+          EGP_C: ${{ secrets.EGP_C }}
+          USD_C: ${{ secrets.USD_C }}
         run: |
           python WealthMonitorBot.py
       - name: Check if data_log.txt has changed
