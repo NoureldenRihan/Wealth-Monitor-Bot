@@ -4,19 +4,14 @@ import requests
 import os
 import telebot
 
-fixedHour = 19 # GMT/UTC timezone
-
-def calculateDaysLeft(endDate):
-    endDate = datetime.strptime(endDate, "%Y-%m-%d")
-    today = datetime.now()
-    days_left = (endDate - today).days
-    return days_left
-
 def extractNumbers(string):
     return ''.join(char for char in string if char.isdigit() or char == '.')[:-1]
 
 def saveData(data):
-    file_path = './data_log.txt'
+    if normal:
+        file_path = './data_log.txt'
+    else:
+        file_path = './data_logZ.txt'
 
     # Write data to the text file
     with open(file_path, 'a') as file:
@@ -26,64 +21,89 @@ def saveData(data):
 
 def sendMsg():
     bot_token = os.getenv('BOT_TOKEN')
-    chat_id = os.getenv('CHAT_ID')
-    bot = telebot.TeleBot(bot_token)
-    
-    message = f'''Wealth Monitor Bot is here!
+    if normal:
+        chat_id = os.getenv('CHAT_ID')
+        bot = telebot.TeleBot(bot_token)
+        
+        message = f'''Wealth Monitor Bot is here!
 
-GOLD:
+    GOLD:
 
-24K: {storage["24KGold"]}g x {data["24K Egy Gold"]['weight']} = {data["24K Egy Gold"]['value']} EGP
+    24K: {storage["24KGold"]}g x {data["24K Egy Gold"]['weight']} = {data["24K Egy Gold"]['value']} EGP
 
-22K: {storage["22KGold"]}g x {data["22K Egy Gold"]['weight']} = {data["22K Egy Gold"]['value']} EGP
+    22K: {storage["22KGold"]}g x {data["22K Egy Gold"]['weight']} = {data["22K Egy Gold"]['value']} EGP
 
-21K: {storage["21KGold"]}g x {data["21K Egy Gold"]['weight']} = {data["21K Egy Gold"]['value']} EGP
+    21K: {storage["21KGold"]}g x {data["21K Egy Gold"]['weight']} = {data["21K Egy Gold"]['value']} EGP
 
-18K: {storage["18KGold"]}g x {data["18K Egy Gold"]['weight']} = {data["18K Egy Gold"]['value']} EGP
+    18K: {storage["18KGold"]}g x {data["18K Egy Gold"]['weight']} = {data["18K Egy Gold"]['value']} EGP
 
-Your Total Gold Value: {data["Your Gold Value"]} EGP
+    Your Total Gold Value: {data["Your Gold Value"]} EGP
 
-CASH:
+    CASH:
 
-Cash (EGP): {storage["EGPCash"]} EGP
+    Cash (EGP): {storage["EGPCash"]} EGP
 
-Cash (USD): {storage['USDCash']} USD
+    Cash (USD): {storage['USDCash']} USD
 
-USD to EGP: {data['USD to EGP']} EGP
+    USD to EGP: {data['USD to EGP']} EGP
 
-Your Total Cash Value: {data["Your Cash Value"]} EGP
+    Your Total Cash Value: {data["Your Cash Value"]} EGP
 
-TOTAL:
+    TOTAL:
 
-Total Wealth (EGP): {data["Total in EGP"]} EGP
+    Total Wealth (EGP): {data["Total in EGP"]} EGP
 
-Total Wealth (USD): {data["Total in USD"]} USD
+    Total Wealth (USD): {data["Total in USD"]} USD
 
-GOALS:
-
-Bronze (1K USD/2025): {round((data["Total in USD"] / 1000) * 100 )}% {calculateDaysLeft(milestoneDates[0])} Days Left
-
-Silver (3.65K USD/2025): {round((data["Total in USD"] / 3650) * 100 )}% {calculateDaysLeft(milestoneDates[1])} Days Left
-
-Gold (10K USD/2026): {round((data["Total in USD"] / 10000) * 100 )}% {calculateDaysLeft(milestoneDates[2])} Days Left
-
-Diamond (50K USD/2027): {round((data["Total in USD"] / 50000) * 100 )}% {calculateDaysLeft(milestoneDates[3])} Days Left
-
-Platinum (100K USD/2029): {round((data["Total in USD"] / 100000) * 100)}% {calculateDaysLeft(milestoneDates[4])} Days Left
-
-Elite (250K USD/2031): {round((data["Total in USD"] / 250000) * 100)}% {calculateDaysLeft(milestoneDates[5])} Days Left
-
-Champion (500K USD/2033): {round((data["Total in USD"] / 500000) * 100)}% {calculateDaysLeft(milestoneDates[6])} Days Left
-
-Unreal (1M USD/2035): {round((data["Total in USD"] / 1000000) * 100)}% {calculateDaysLeft(milestoneDates[7])} Days Left
     '''
-    
-    bot.send_message(chat_id, message)
+        
+        bot.send_message(chat_id, message)
 
-    print("Message Sent")
-    saveData(message)
+        print("Message Sent")
+        saveData(message)
+    else: 
+        chat_id = os.getenv('CHAT_IDZ')
+        bot = telebot.TeleBot(bot_token)
+        
+        message = f'''Wealth Monitor Bot is here!
 
-def fetchData(url):
+    GOLD:
+
+    24K: {storageZ["24KGold"]}g x {data["24K Egy Gold"]['weight']} = {data["24K Egy Gold"]['value']} EGP
+
+    22K: {storageZ["22KGold"]}g x {data["22K Egy Gold"]['weight']} = {data["22K Egy Gold"]['value']} EGP
+
+    21K: {storageZ["21KGold"]}g x {data["21K Egy Gold"]['weight']} = {data["21K Egy Gold"]['value']} EGP
+
+    18K: {storageZ["18KGold"]}g x {data["18K Egy Gold"]['weight']} = {data["18K Egy Gold"]['value']} EGP
+
+    Your Total Gold Value: {data["Your Gold Value"]} EGP
+
+    CASH:
+
+    Cash (EGP): {storageZ["EGPCash"]} EGP
+
+    Cash (USD): {storageZ['USDCash']} USD
+
+    USD to EGP: {data['USD to EGP']} EGP
+
+    Your Total Cash Value: {data["Your Cash Value"]} EGP
+
+    TOTAL:
+
+    Total Wealth (EGP): {data["Total in EGP"]} EGP
+
+    Total Wealth (USD): {data["Total in USD"]} USD
+
+    '''
+        
+        bot.send_message(chat_id, message)
+
+        print("Message Sent")
+        saveData(message)
+
+
+def fetchData(url, storage):
     response = requests.get(url)
     if response.status_code == 200:
         soup = BeautifulSoup(response.content, 'html.parser')
@@ -134,16 +154,13 @@ def fetchData(url):
 
     sendMsg()
 
+fixedHour = 11 # GMT/UTC timezone
+
 url = 'https://market.isagha.com/prices'
 
-storage = {
-    '24KGold': float(os.getenv('G24K')),
-    '22KGold': float(os.getenv('G22K')),
-    '21KGold': float(os.getenv('G21K')),
-    '18KGold': float(os.getenv('G18K')),
-    'EGPCash': float(os.getenv('EGP_C')),
-    'USDCash': float(os.getenv('USD_C')),
-}
+current_hour = datetime.now(timezone.utc).hour
+
+normal = True
 
 data = {
     '24K Egy Gold': {
@@ -169,20 +186,27 @@ data = {
     'Total in USD': 0,
 }
 
-milestoneDates = [
-    "2025-08-24",
-    "2025-08-24",
-    "2026-08-24",
-    "2027-08-24",
-    "2029-08-24",
-    "2031-08-24",
-    "2033-08-24",
-    "2035-08-24",
-]
+storage = {
+    '24KGold': float(os.getenv('G24K')),
+    '22KGold': float(os.getenv('G22K')),
+    '21KGold': float(os.getenv('G21K')),
+    '18KGold': float(os.getenv('G18K')),
+    'EGPCash': float(os.getenv('EGP_C')),
+    'USDCash': float(os.getenv('USD_C')),
+}
 
-current_hour = datetime.now(timezone.utc).hour
+storageZ = {
+    '24KGold': float(os.getenv('G24KZ')),
+    '22KGold': float(os.getenv('G22KZ')),
+    '21KGold': float(os.getenv('G21KZ')),
+    '18KGold': float(os.getenv('G18KZ')),
+    'EGPCash': float(os.getenv('EGP_CZ')),
+    'USDCash': float(os.getenv('USD_CZ')),
+}
 
 if current_hour == fixedHour:
-    fetchData(url)
+    fetchData(url, storage)
+    normal = False
+    fetchData(url, storageZ)
 else:
     print('Invalid Timing!')

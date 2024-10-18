@@ -2,7 +2,7 @@ name: Wealth Monitor Schedule
 
 on:
   schedule:
-    - cron: "17 * * * *" # Runs every minute for testing
+    - cron: "53 * * * *" # Runs every minute for testing
 
 jobs:
   run-script:
@@ -28,6 +28,13 @@ jobs:
           G18K: ${{ secrets.G18K }}
           EGP_C: ${{ secrets.EGP_C }}
           USD_C: ${{ secrets.USD_C }}
+          CHAT_IDZ: ${{ secrets.CHAT_IDZ }}
+          G24KZ: ${{ secrets.G24KZ }}
+          G22KZ: ${{ secrets.G22KZ }}
+          G21KZ: ${{ secrets.G21KZ }}
+          G18KZ: ${{ secrets.G18KZ }}
+          EGP_CZ: ${{ secrets.EGP_CZ }}
+          USD_CZ: ${{ secrets.USD_CZ }}
         run: |
           python WealthMonitorBot.py
       - name: Check if data_log.txt has changed
@@ -39,8 +46,8 @@ jobs:
         run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
-          git add data_log.txt
-          git commit -m "Update data_log.txt with new data"
+          git add .
+          git commit -m "Update Data Logs with new data"
           git push
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
