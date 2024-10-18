@@ -154,7 +154,7 @@ def fetchData(url, storage):
 
     sendMsg()
 
-fixedHour = 11 # GMT/UTC timezone
+fixedHour = 12 # GMT/UTC timezone
 
 url = 'https://market.isagha.com/prices'
 

@@ -2,7 +2,7 @@ name: Wealth Monitor Schedule
 
 on:
   schedule:
-    - cron: "53 * * * *" # Runs every minute for testing
+    - cron: "12 * * * *" # Runs every minute for testing
 
 jobs:
   run-script:
