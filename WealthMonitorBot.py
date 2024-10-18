@@ -102,7 +102,6 @@ Total Wealth (USD): {data["Total in USD"]} USD
         print("Message Sent")
         saveData(message)
 
-
 def fetchData(url, storage):
     response = requests.get(url)
     if response.status_code == 200:
@@ -154,11 +153,11 @@ def fetchData(url, storage):
 
     sendMsg()
 
-fixedHour = 12 # GMT/UTC timezone
+fixedHour = 19 # GMT/UTC timezone
 
 url = 'https://market.isagha.com/prices'
 
-current_hour = datetime.now(timezone.utc).hour
+currentHour = datetime.now(timezone.utc).hour
 
 normal = True
 
@@ -204,7 +203,7 @@ storageZ = {
     'USDCash': float(os.getenv('USD_CZ')),
 }
 
-if True:
+if fixedHour == currentHour:
     fetchData(url, storage)
     normal = False
     fetchData(url, storageZ)
