@@ -204,7 +204,7 @@ storageZ = {
     'USDCash': float(os.getenv('USD_CZ')),
 }
 
-if current_hour == fixedHour:
+if True:
     fetchData(url, storage)
     normal = False
     fetchData(url, storageZ)
