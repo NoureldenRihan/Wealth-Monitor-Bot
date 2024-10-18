@@ -27,33 +27,33 @@ def sendMsg():
         
         message = f'''Wealth Monitor Bot is here!
 
-    GOLD:
+GOLD:
 
-    24K: {storage["24KGold"]}g x {data["24K Egy Gold"]['weight']} = {data["24K Egy Gold"]['value']} EGP
+24K: {storage["24KGold"]}g x {data["24K Egy Gold"]['weight']} = {data["24K Egy Gold"]['value']} EGP
 
-    22K: {storage["22KGold"]}g x {data["22K Egy Gold"]['weight']} = {data["22K Egy Gold"]['value']} EGP
+22K: {storage["22KGold"]}g x {data["22K Egy Gold"]['weight']} = {data["22K Egy Gold"]['value']} EGP
 
-    21K: {storage["21KGold"]}g x {data["21K Egy Gold"]['weight']} = {data["21K Egy Gold"]['value']} EGP
+21K: {storage["21KGold"]}g x {data["21K Egy Gold"]['weight']} = {data["21K Egy Gold"]['value']} EGP
 
-    18K: {storage["18KGold"]}g x {data["18K Egy Gold"]['weight']} = {data["18K Egy Gold"]['value']} EGP
+18K: {storage["18KGold"]}g x {data["18K Egy Gold"]['weight']} = {data["18K Egy Gold"]['value']} EGP
 
-    Your Total Gold Value: {data["Your Gold Value"]} EGP
+Your Total Gold Value: {data["Your Gold Value"]} EGP
 
-    CASH:
+CASH:
 
-    Cash (EGP): {storage["EGPCash"]} EGP
+Cash (EGP): {storage["EGPCash"]} EGP
 
-    Cash (USD): {storage['USDCash']} USD
+Cash (USD): {storage['USDCash']} USD
 
-    USD to EGP: {data['USD to EGP']} EGP
+USD to EGP: {data['USD to EGP']} EGP
 
-    Your Total Cash Value: {data["Your Cash Value"]} EGP
+Your Total Cash Value: {data["Your Cash Value"]} EGP
 
-    TOTAL:
+TOTAL:
 
-    Total Wealth (EGP): {data["Total in EGP"]} EGP
+Total Wealth (EGP): {data["Total in EGP"]} EGP
 
-    Total Wealth (USD): {data["Total in USD"]} USD
+Total Wealth (USD): {data["Total in USD"]} USD
 
     '''
         
@@ -67,33 +67,33 @@ def sendMsg():
         
         message = f'''Wealth Monitor Bot is here!
 
-    GOLD:
+GOLD:
 
-    24K: {storageZ["24KGold"]}g x {data["24K Egy Gold"]['weight']} = {data["24K Egy Gold"]['value']} EGP
+24K: {storageZ["24KGold"]}g x {data["24K Egy Gold"]['weight']} = {data["24K Egy Gold"]['value']} EGP
 
-    22K: {storageZ["22KGold"]}g x {data["22K Egy Gold"]['weight']} = {data["22K Egy Gold"]['value']} EGP
+22K: {storageZ["22KGold"]}g x {data["22K Egy Gold"]['weight']} = {data["22K Egy Gold"]['value']} EGP
 
-    21K: {storageZ["21KGold"]}g x {data["21K Egy Gold"]['weight']} = {data["21K Egy Gold"]['value']} EGP
+21K: {storageZ["21KGold"]}g x {data["21K Egy Gold"]['weight']} = {data["21K Egy Gold"]['value']} EGP
 
-    18K: {storageZ["18KGold"]}g x {data["18K Egy Gold"]['weight']} = {data["18K Egy Gold"]['value']} EGP
+18K: {storageZ["18KGold"]}g x {data["18K Egy Gold"]['weight']} = {data["18K Egy Gold"]['value']} EGP
 
-    Your Total Gold Value: {data["Your Gold Value"]} EGP
+Your Total Gold Value: {data["Your Gold Value"]} EGP
 
-    CASH:
+CASH:
 
-    Cash (EGP): {storageZ["EGPCash"]} EGP
+Cash (EGP): {storageZ["EGPCash"]} EGP
 
-    Cash (USD): {storageZ['USDCash']} USD
+Cash (USD): {storageZ['USDCash']} USD
 
-    USD to EGP: {data['USD to EGP']} EGP
+USD to EGP: {data['USD to EGP']} EGP
 
-    Your Total Cash Value: {data["Your Cash Value"]} EGP
+Your Total Cash Value: {data["Your Cash Value"]} EGP
 
-    TOTAL:
+TOTAL:
 
-    Total Wealth (EGP): {data["Total in EGP"]} EGP
+Total Wealth (EGP): {data["Total in EGP"]} EGP
 
-    Total Wealth (USD): {data["Total in USD"]} USD
+Total Wealth (USD): {data["Total in USD"]} USD
 
     '''
         
