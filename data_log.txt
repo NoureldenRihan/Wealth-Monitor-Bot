@@ -5442,3 +5442,34 @@ Total Wealth (EGP): 29525 EGP
 Total Wealth (USD): 588 USD
 
     
+2025-01-30 19:21:40.934411+00:00 - Wealth Monitor Bot is here!
+
+GOLD:
+
+24K: 1.25g x 4434 = 5542 EGP
+
+22K: 0.0g x 4086 = 0 EGP
+
+21K: 0.0g x 3900 = 0 EGP
+
+18K: 1.0g x 3343 = 3343 EGP
+
+Your Total Gold Value: 8885 EGP
+
+CASH:
+
+Cash (EGP): 2600.0 EGP
+
+Cash (USD): 361.66 USD
+
+USD to EGP: 50.258 EGP
+
+Your Total Cash Value: 20776 EGP
+
+TOTAL:
+
+Total Wealth (EGP): 29661 EGP
+
+Total Wealth (USD): 590 USD
+
+    
