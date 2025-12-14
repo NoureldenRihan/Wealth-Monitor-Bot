@@ -39,4 +39,10 @@ jobs:
           USD_CZ: ${{ secrets.USD_CZ }}
         run: |
           python WealthMonitorBot.py
+      - name: Upload Debug Logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-logs
+          path: templogs.txt
 

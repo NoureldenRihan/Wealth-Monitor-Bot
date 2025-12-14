@@ -95,6 +95,13 @@ def fetchData(url, storage):
     if response.status_code == 200:
         soup = BeautifulSoup(response.content, 'html.parser')
 
+        # DEBUG: Write HTML to templogs.txt
+        with open('templogs.txt', 'w', encoding='utf-8') as f:
+            f.write(f"--- DEBUG LOG {datetime.now()} ---\n")
+            f.write(soup.prettify())
+        
+        print("DEBUG: Saved HTML to templogs.txt")
+
         # Website Pattern is as follows:
         # [0] buy price
         # [1] sell price
@@ -102,7 +109,19 @@ def fetchData(url, storage):
         # same pattern for every Karat so each Karat has 3 Values
 
         # Retreive 24K Gold Price
-        K24price = soup.select('div.isagha-panel > div.clearfix > div.col-xs-4 > div.value')[1].text
+        try:
+            elements = soup.select('div.isagha-panel > div.clearfix > div.col-xs-4 > div.value')
+            if len(elements) > 1:
+                K24price = elements[1].text
+                print(f"DEBUG: K24price raw value: '{K24price}'")
+            else:
+                print(f"DEBUG: Elements found: {len(elements)}")
+                K24price = "0"
+            
+            K24price = soup.select('div.isagha-panel > div.clearfix > div.col-xs-4 > div.value')[1].text
+        except Exception as e:
+             print(f"DEBUG: Error selecting 24K price: {e}")
+             
         data['24K Egy Gold']['weight'] = round(float(extractNumbers(K24price)))
         data['24K Egy Gold']['value'] = round(data['24K Egy Gold']['weight'] * storage['24KGold'])
 
