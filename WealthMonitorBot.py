@@ -8,11 +8,9 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import pytesseract
-from PIL import Image
+from PIL import Image, ImageOps
 import io
-
-# Ensure Tesseract is in PATH or set it here if needed (usually fine in GH Actions)
-# pytesseract.pytesseract.tesseract_cmd = r'/usr/bin/tesseract' 
+import base64
 
 def extractNumbers(string):
     # Only keep digits and dots
@@ -62,7 +60,6 @@ Total Wealth (USD): {data["Total in USD"]} USD
     bot.send_message(chat_id, message)
     print("Message Sent")
 
-import base64
 
 def get_price_from_base64(base64_string, idx):
     try:
@@ -72,14 +69,28 @@ def get_price_from_base64(base64_string, idx):
         image_data = base64.b64decode(base64_string)
         image = Image.open(io.BytesIO(image_data))
         
+        # Preprocessing to improve OCR accuracy
+        # 1. Add white border (padding) - Tesseract dislikes text touching edges
+        image = ImageOps.expand(image, border=20, fill='white')
+        
+        # 2. Resize (Scale up) - Small text is hard to read
+        # Convert to RGB to ensure compatibility
+        if image.mode != 'RGB':
+            image = image.convert('RGB')
+            
+        new_size = tuple(3 * x for x in image.size)
+        image = image.resize(new_size, Image.Resampling.LANCZOS)
+        
         # Configure Tesseract
+        # psm 7: Treat the image as a single text line.
+        # tessedit_char_whitelist: Limit to digits and dot
         text = pytesseract.image_to_string(image, config='--psm 7 -c tessedit_char_whitelist=0123456789.')
         extracted_value = extractNumbers(text)
         
-        # Save image for debug
+        # Save processed image for debug
         filename = f"ocr_img_{idx}_val_{extracted_value}.png"
         image.save(filename)
-        print(f"DEBUG: Saved image to {filename}")
+        print(f"DEBUG: Saved processed image to {filename}")
         
         print(f"DEBUG: OCR on base64 image {idx} result: '{text.strip()}'")
         return float(extracted_value) if extracted_value else 0.0
