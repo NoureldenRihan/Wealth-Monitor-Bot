@@ -66,25 +66,45 @@ def fetchUSDGoogle(driver):
         print("Fetching USD to EGP from Google...")
         driver.get("https://www.google.com/search?q=1+usd+to+egp&hl=en")
         
-        # Wait for the magic conversion box
-        WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, "div.dDoNo"))
-        )
+        # Wait for any of the common currency containers
+        try:
+            WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, "div.dDoNo, div.b1hJbf"))
+            )
+        except:
+             print("DEBUG: Google Currency container not found, proceeding to fallback selectors anyway...")
+
+        rate_text = None
+        selectors = [
+            "span.DFlfde.SwHCTb", # Desktop standard
+            "span.mw31Ze",        # Alternative
+            "div.BNeawe.iBp4i.AP7Wnd", # Mobile/Lightweight
+            "div.BNeawe"          # Generic bold text (risky)
+        ]
         
-        # Select the rate element.
-        # Class "DFlfde" is commonly the large number in the converter.
-        # "SwHCTb" is another common one.
-        rate_element = driver.find_element(By.CSS_SELECTOR, "span.DFlfde.SwHCTb")
-        rate_text = rate_element.text
+        for sel in selectors:
+            try:
+                elem = driver.find_element(By.CSS_SELECTOR, sel)
+                txt = elem.text.strip()
+                if txt and extractNumbers(txt):
+                    rate_text = txt
+                    print(f"DEBUG: Found rate '{rate_text}' using selector '{sel}'")
+                    break
+            except:
+                continue
         
-        # Sometimes it has comma like "5,000" (unlikely for exchange rate but '50.12')
-        # Google uses point for decimal in English locale (&hl=en forced above)
-        print(f"DEBUG: Google USD Rate found: '{rate_text}'")
+        if not rate_text:
+            print("DEBUG: Could not find USD rate with standard selectors.")
+            # Save debug info
+            driver.save_screenshot("google_usd_fail.png")
+            with open("google_usd_fail.html", "w", encoding='utf-8') as f:
+                f.write(driver.page_source)
+            return 0.0
+
         return float(extractNumbers(rate_text))
         
     except Exception as e:
         print(f"DEBUG: Google USD fetch failed: {e}")
-        # Fallback? Maybe return 0 or hardcoded safe value?
         return 0.0
 
 def get_price_from_base64(base64_string, idx):
@@ -167,8 +187,8 @@ def fetchData(url, storage, normal):
                 if len(values) >= 10:
                     k24 = values[1]
                     k22 = values[3]
-                    k21 = values[6]
-                    k18 = values[9]
+                    k21 = values[5]
+                    k18 = values[7]
                     
                     # We NO LONGER check for USD here since we use Google
             else:
