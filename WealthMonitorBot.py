@@ -61,6 +61,32 @@ Total Wealth (USD): {data["Total in USD"]} USD
     print("Message Sent")
 
 
+def fetchUSDGoogle(driver):
+    try:
+        print("Fetching USD to EGP from Google...")
+        driver.get("https://www.google.com/search?q=1+usd+to+egp&hl=en")
+        
+        # Wait for the magic conversion box
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "div.dDoNo"))
+        )
+        
+        # Select the rate element.
+        # Class "DFlfde" is commonly the large number in the converter.
+        # "SwHCTb" is another common one.
+        rate_element = driver.find_element(By.CSS_SELECTOR, "span.DFlfde.SwHCTb")
+        rate_text = rate_element.text
+        
+        # Sometimes it has comma like "5,000" (unlikely for exchange rate but '50.12')
+        # Google uses point for decimal in English locale (&hl=en forced above)
+        print(f"DEBUG: Google USD Rate found: '{rate_text}'")
+        return float(extractNumbers(rate_text))
+        
+    except Exception as e:
+        print(f"DEBUG: Google USD fetch failed: {e}")
+        # Fallback? Maybe return 0 or hardcoded safe value?
+        return 0.0
+
 def get_price_from_base64(base64_string, idx):
     try:
         if ',' in base64_string:
@@ -69,30 +95,27 @@ def get_price_from_base64(base64_string, idx):
         image_data = base64.b64decode(base64_string)
         image = Image.open(io.BytesIO(image_data))
         
-        # Preprocessing to improve OCR accuracy
-        # 1. Add white border (padding) - Tesseract dislikes text touching edges
+        # Preprocessing...
         image = ImageOps.expand(image, border=20, fill='white')
-        
-        # 2. Resize (Scale up) - Small text is hard to read
-        # Convert to RGB to ensure compatibility
-        if image.mode != 'RGB':
-            image = image.convert('RGB')
-            
+        if image.mode != 'RGB': image = image.convert('RGB')
         new_size = tuple(3 * x for x in image.size)
         image = image.resize(new_size, Image.Resampling.LANCZOS)
         
         # Configure Tesseract
-        # psm 7: Treat the image as a single text line.
-        # tessedit_char_whitelist: Limit to digits and dot
         text = pytesseract.image_to_string(image, config='--psm 7 -c tessedit_char_whitelist=0123456789.')
         extracted_value = extractNumbers(text)
         
+        # TRUNCATE to first 4 digits as requested
+        # Ensure we have at least numbers
+        if extracted_value and len(extracted_value) > 4:
+            print(f"DEBUG: Truncating '{extracted_value}' to '{extracted_value[:4]}'")
+            extracted_value = extracted_value[:4]
+            
         # Save processed image for debug
         filename = f"ocr_img_{idx}_val_{extracted_value}.png"
         image.save(filename)
-        print(f"DEBUG: Saved processed image to {filename}")
         
-        print(f"DEBUG: OCR on base64 image {idx} result: '{text.strip()}'")
+        print(f"DEBUG: OCR on base64 image {idx} result: '{text.strip()}' -> '{extracted_value}'")
         return float(extracted_value) if extracted_value else 0.0
     except Exception as e:
         print(f"DEBUG: Error processing base64 image {idx}: {e}")
@@ -103,10 +126,16 @@ def fetchData(url, storage, normal):
     chrome_options.add_argument("--headless")
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--disable-dev-shm-usage")
+    # Add user agent to avoid Google blocking
+    chrome_options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36")
     
     driver = webdriver.Chrome(options=chrome_options)
     
     try:
+        # 1. Fetch USD from Google FIRST
+        usd = fetchUSDGoogle(driver)
+        
+        # 2. Fetch Gold Prices from Isagha
         print(f"Navigating to {url}...")
         driver.get(url)
         
@@ -120,7 +149,7 @@ def fetchData(url, storage, normal):
         k22 = 0
         k21 = 0
         k18 = 0
-        usd = 0
+        # usd already set
         
         try:
             # Find all price images
@@ -128,16 +157,12 @@ def fetchData(url, storage, normal):
             
             if len(images) > 0:
                 print(f"DEBUG: Found {len(images)} price images.")
-                
-                # Extract srcs
                 srcs = [img.get_attribute('src') for img in images]
                 
-                # DEBUG: Process all to see what we get
                 values = []
                 for i, src in enumerate(srcs):
                     val = get_price_from_base64(src, i)
                     values.append(val)
-                    print(f"DEBUG: Image {i}: {val}")
                 
                 if len(values) >= 10:
                     k24 = values[1]
@@ -145,13 +170,13 @@ def fetchData(url, storage, normal):
                     k21 = values[6]
                     k18 = values[9]
                     
-                    if len(values) > 12:
-                         usd = values[-3]
+                    # We NO LONGER check for USD here since we use Google
             else:
                 print("DEBUG: No images with class 'price-cell' found.")
                 
         except Exception as e:
             print(f"DEBUG: Base64 extraction failed: {e}")
+
 
         # Update data object
         data['24K Egy Gold']['weight'] = round(k24)
