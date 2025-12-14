@@ -1,6 +1,7 @@
 name: Wealth Monitor Schedule
 
 on:
+  workflow_dispatch:
   schedule:
     # - cron: "17 * * * *"
     - cron: "* * * * *"
