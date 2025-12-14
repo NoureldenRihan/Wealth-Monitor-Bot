@@ -7,17 +7,6 @@ import telebot
 def extractNumbers(string):
     return ''.join(char for char in string if char.isdigit() or char == '.')[:-1]
 
-def saveData(data):
-    if normal:
-        file_path = './data_log.txt'
-    else:
-        file_path = './data_logZ.txt'
-
-    # Write data to the text file
-    with open(file_path, 'a') as file:
-        file.write(f"{datetime.now(timezone.utc)} - {data}\n")
-
-    print("Data written to data_log.")
 
 def sendMsg():
     bot_token = os.getenv('BOT_TOKEN')
@@ -60,7 +49,6 @@ Total Wealth (USD): {data["Total in USD"]} USD
         bot.send_message(chat_id, message)
 
         print("Message Sent")
-        saveData(message)
     else: 
         chat_id = os.getenv('CHAT_IDZ')
         bot = telebot.TeleBot(bot_token)
@@ -97,10 +85,10 @@ Total Wealth (USD): {data["Total in USD"]} USD
 
     '''
         
+
         bot.send_message(chat_id, message)
 
         print("Message Sent")
-        saveData(message)
 
 def fetchData(url, storage):
     response = requests.get(url)
@@ -203,7 +191,8 @@ storageZ = {
     'USDCash': float(os.getenv('USD_CZ')),
 }
 
-if fixedHour == currentHour:
+# if fixedHour == currentHour:
+if True:
     fetchData(url, storage)
     normal = False
     fetchData(url, storageZ)
