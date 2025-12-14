@@ -63,48 +63,25 @@ Total Wealth (USD): {data["Total in USD"]} USD
 
 def fetchUSDGoogle(driver):
     try:
-        print("Fetching USD to EGP from Google...")
-        driver.get("https://www.google.com/search?q=1+usd+to+egp&hl=en")
+        print("Fetching USD to EGP from Google Finance...")
+        driver.get("https://www.google.com/finance/quote/USD-EGP")
         
-        # Wait for any of the common currency containers
-        try:
-            WebDriverWait(driver, 10).until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, "div.dDoNo, div.b1hJbf"))
-            )
-        except:
-             print("DEBUG: Google Currency container not found, proceeding to fallback selectors anyway...")
-
-        rate_text = None
-        selectors = [
-            "span.DFlfde.SwHCTb", # Desktop standard
-            "span.mw31Ze",        # Alternative
-            "div.BNeawe.iBp4i.AP7Wnd", # Mobile/Lightweight
-            "div.BNeawe"          # Generic bold text (risky)
-        ]
+        # Wait for the price element
+        # User provided class: YMlKec fxKbKc
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "div.YMlKec.fxKbKc"))
+        )
         
-        for sel in selectors:
-            try:
-                elem = driver.find_element(By.CSS_SELECTOR, sel)
-                txt = elem.text.strip()
-                if txt and extractNumbers(txt):
-                    rate_text = txt
-                    print(f"DEBUG: Found rate '{rate_text}' using selector '{sel}'")
-                    break
-            except:
-                continue
+        rate_element = driver.find_element(By.CSS_SELECTOR, "div.YMlKec.fxKbKc")
+        rate_text = rate_element.text
         
-        if not rate_text:
-            print("DEBUG: Could not find USD rate with standard selectors.")
-            # Save debug info
-            driver.save_screenshot("google_usd_fail.png")
-            with open("google_usd_fail.html", "w", encoding='utf-8') as f:
-                f.write(driver.page_source)
-            return 0.0
-
+        print(f"DEBUG: Google Finance USD Rate found: '{rate_text}'")
         return float(extractNumbers(rate_text))
         
     except Exception as e:
-        print(f"DEBUG: Google USD fetch failed: {e}")
+        print(f"DEBUG: Google Finance USD fetch failed: {e}")
+        # Save debug info
+        driver.save_screenshot("google_finance_fail.png")
         return 0.0
 
 def get_price_from_base64(base64_string, idx):
