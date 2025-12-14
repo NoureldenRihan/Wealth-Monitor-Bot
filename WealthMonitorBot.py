@@ -60,14 +60,11 @@ Total Wealth (USD): {data["Total in USD"]} USD
     bot.send_message(chat_id, message)
     print("Message Sent")
 
-
 def fetchUSDGoogle(driver):
     try:
-        print("Fetching USD to EGP from Google Finance...")
         driver.get("https://www.google.com/finance/quote/USD-EGP")
         
         # Wait for the price element
-        # User provided class: YMlKec fxKbKc
         WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "div.YMlKec.fxKbKc"))
         )
@@ -75,16 +72,14 @@ def fetchUSDGoogle(driver):
         rate_element = driver.find_element(By.CSS_SELECTOR, "div.YMlKec.fxKbKc")
         rate_text = rate_element.text
         
-        print(f"DEBUG: Google Finance USD Rate found: '{rate_text}'")
-        return float(extractNumbers(rate_text))
+        val = float(extractNumbers(rate_text))
+        return round(val, 2)
         
     except Exception as e:
-        print(f"DEBUG: Google Finance USD fetch failed: {e}")
-        # Save debug info
-        driver.save_screenshot("google_finance_fail.png")
+        print(f"Error fetching USD: {e}")
         return 0.0
 
-def get_price_from_base64(base64_string, idx):
+def get_price_from_base64(base64_string):
     try:
         if ',' in base64_string:
             base64_string = base64_string.split(',')[1]
@@ -92,7 +87,7 @@ def get_price_from_base64(base64_string, idx):
         image_data = base64.b64decode(base64_string)
         image = Image.open(io.BytesIO(image_data))
         
-        # Preprocessing...
+        # Preprocessing
         image = ImageOps.expand(image, border=20, fill='white')
         if image.mode != 'RGB': image = image.convert('RGB')
         new_size = tuple(3 * x for x in image.size)
@@ -102,20 +97,12 @@ def get_price_from_base64(base64_string, idx):
         text = pytesseract.image_to_string(image, config='--psm 7 -c tessedit_char_whitelist=0123456789.')
         extracted_value = extractNumbers(text)
         
-        # TRUNCATE to first 4 digits as requested
-        # Ensure we have at least numbers
+        # TRUNCATE to first 4 digits
         if extracted_value and len(extracted_value) > 4:
-            print(f"DEBUG: Truncating '{extracted_value}' to '{extracted_value[:4]}'")
             extracted_value = extracted_value[:4]
             
-        # Save processed image for debug
-        filename = f"ocr_img_{idx}_val_{extracted_value}.png"
-        image.save(filename)
-        
-        print(f"DEBUG: OCR on base64 image {idx} result: '{text.strip()}' -> '{extracted_value}'")
         return float(extracted_value) if extracted_value else 0.0
-    except Exception as e:
-        print(f"DEBUG: Error processing base64 image {idx}: {e}")
+    except Exception:
         return 0.0
 
 def fetchData(url, storage, normal):
@@ -123,42 +110,33 @@ def fetchData(url, storage, normal):
     chrome_options.add_argument("--headless")
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--disable-dev-shm-usage")
-    # Add user agent to avoid Google blocking
     chrome_options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36")
     
     driver = webdriver.Chrome(options=chrome_options)
     
     try:
-        # 1. Fetch USD from Google FIRST
         usd = fetchUSDGoogle(driver)
         
-        # 2. Fetch Gold Prices from Isagha
-        print(f"Navigating to {url}...")
         driver.get(url)
         
-        # Wait for page/images to load
         WebDriverWait(driver, 15).until(
-            EC.presence_of_element_located((By.TAG_NAME, "a")) # Generic wait
+            EC.presence_of_element_located((By.TAG_NAME, "a"))
         )
         
-        # Initialize values
         k24 = 0
         k22 = 0
         k21 = 0
         k18 = 0
-        # usd already set
         
         try:
-            # Find all price images
             images = driver.find_elements(By.CSS_SELECTOR, "img.price-cell")
             
             if len(images) > 0:
-                print(f"DEBUG: Found {len(images)} price images.")
                 srcs = [img.get_attribute('src') for img in images]
                 
                 values = []
-                for i, src in enumerate(srcs):
-                    val = get_price_from_base64(src, i)
+                for src in srcs:
+                    val = get_price_from_base64(src)
                     values.append(val)
                 
                 if len(values) >= 10:
@@ -166,14 +144,11 @@ def fetchData(url, storage, normal):
                     k22 = values[3]
                     k21 = values[5]
                     k18 = values[7]
-                    
-                    # We NO LONGER check for USD here since we use Google
             else:
-                print("DEBUG: No images with class 'price-cell' found.")
+                print("No price images found.")
                 
         except Exception as e:
-            print(f"DEBUG: Base64 extraction failed: {e}")
-
+            print(f"Extraction failed: {e}")
 
         # Update data object
         data['24K Egy Gold']['weight'] = round(k24)
@@ -209,8 +184,7 @@ fixedHour = 19
 url = 'https://market.isagha.com/prices'
 currentHour = datetime.now(timezone.utc).hour
 
-# We keep the "if True" trigger for testing as requested by user previously
-# if fixedHour == currentHour:
+# if fixedHour == currentHour: 
 if True: 
     # Setup Data Structures
     data = {
