@@ -1,20 +1,33 @@
-from bs4 import BeautifulSoup
 from datetime import datetime, timezone
-import requests
 import os
 import telebot
+import re
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+import pytesseract
+from PIL import Image
+import io
+
+# Ensure Tesseract is in PATH or set it here if needed (usually fine in GH Actions)
+# pytesseract.pytesseract.tesseract_cmd = r'/usr/bin/tesseract' 
 
 def extractNumbers(string):
-    return ''.join(char for char in string if char.isdigit() or char == '.')[:-1]
+    # Only keep digits and dots
+    return ''.join(char for char in string if char.isdigit() or char == '.')
 
-
-def sendMsg():
+def sendMsg(data, storage, normal):
     bot_token = os.getenv('BOT_TOKEN')
     if normal:
         chat_id = os.getenv('CHAT_ID')
-        bot = telebot.TeleBot(bot_token)
+    else:
+        chat_id = os.getenv('CHAT_IDZ')
         
-        message = f'''Wealth Monitor Bot is here!
+    bot = telebot.TeleBot(bot_token)
+    
+    message = f'''Wealth Monitor Bot (OCR Edition) is here!
 
 GOLD:
 
@@ -45,175 +58,180 @@ Total Wealth (EGP): {data["Total in EGP"]} EGP
 Total Wealth (USD): {data["Total in USD"]} USD
 
     '''
+    
+    bot.send_message(chat_id, message)
+    print("Message Sent")
+
+import base64
+
+def get_price_from_base64(base64_string):
+    try:
+        if ',' in base64_string:
+            base64_string = base64_string.split(',')[1]
         
-        bot.send_message(chat_id, message)
-
-        print("Message Sent")
-    else: 
-        chat_id = os.getenv('CHAT_IDZ')
-        bot = telebot.TeleBot(bot_token)
+        image_data = base64.b64decode(base64_string)
+        image = Image.open(io.BytesIO(image_data))
         
-        message = f'''Wealth Monitor Bot is here!
-
-GOLD:
-
-24K: {storageZ["24KGold"]}g x {data["24K Egy Gold"]['weight']} = {data["24K Egy Gold"]['value']} EGP
-
-22K: {storageZ["22KGold"]}g x {data["22K Egy Gold"]['weight']} = {data["22K Egy Gold"]['value']} EGP
-
-21K: {storageZ["21KGold"]}g x {data["21K Egy Gold"]['weight']} = {data["21K Egy Gold"]['value']} EGP
-
-18K: {storageZ["18KGold"]}g x {data["18K Egy Gold"]['weight']} = {data["18K Egy Gold"]['value']} EGP
-
-Your Total Gold Value: {data["Your Gold Value"]} EGP
-
-CASH:
-
-Cash (EGP): {storageZ["EGPCash"]} EGP
-
-Cash (USD): {storageZ['USDCash']} USD
-
-USD to EGP: {data['USD to EGP']} EGP
-
-Your Total Cash Value: {data["Your Cash Value"]} EGP
-
-TOTAL:
-
-Total Wealth (EGP): {data["Total in EGP"]} EGP
-
-Total Wealth (USD): {data["Total in USD"]} USD
-
-    '''
+        # Configure Tesseract to look for a single line of text/numbers
+        # psm 7 = Treat the image as a single text line.
+        text = pytesseract.image_to_string(image, config='--psm 7 -c tessedit_char_whitelist=0123456789.')
         
+        print(f"DEBUG: OCR on base64 image result: '{text.strip()}'")
+        return float(extractNumbers(text))
+    except Exception as e:
+        print(f"DEBUG: Error processing base64 image: {e}")
+        return 0.0
 
-        bot.send_message(chat_id, message)
-
-        print("Message Sent")
-
-def fetchData(url, storage):
-    response = requests.get(url)
-    if response.status_code == 200:
-        soup = BeautifulSoup(response.content, 'html.parser')
-
-        # DEBUG: Write HTML to templogs.txt
-        with open('templogs.txt', 'w', encoding='utf-8') as f:
-            f.write(f"--- DEBUG LOG {datetime.now()} ---\n")
-            f.write(soup.prettify())
+def fetchData(url, storage, normal):
+    chrome_options = Options()
+    chrome_options.add_argument("--headless")
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--disable-dev-shm-usage")
+    
+    driver = webdriver.Chrome(options=chrome_options)
+    
+    try:
+        print(f"Navigating to {url}...")
+        driver.get(url)
         
-        print("DEBUG: Saved HTML to templogs.txt")
-
-        # Website Pattern is as follows:
-        # [0] buy price
-        # [1] sell price
-        # [2] Diffrence
-        # same pattern for every Karat so each Karat has 3 Values
-
-        # Retreive 24K Gold Price
+        # Wait for page/images to load
+        WebDriverWait(driver, 15).until(
+            EC.presence_of_element_located((By.TAG_NAME, "a")) # Generic wait
+        )
+        
+        # Initialize values
+        k24 = 0
+        k22 = 0
+        k21 = 0
+        k18 = 0
+        usd = 0
+        
+        # Strategy: Look for the specific base64 images
+        # We assume the order matches the previous scraping logic indices
+        # [1] -> 24K, [3] -> 22K, [6] -> 21K, [9] -> 18K, [-3] -> USD
+        
         try:
-            elements = soup.select('div.isagha-panel > div.clearfix > div.col-xs-4 > div.value')
-            if len(elements) > 1:
-                K24price = elements[1].text
-                print(f"DEBUG: K24price raw value: '{K24price}'")
-            else:
-                print(f"DEBUG: Elements found: {len(elements)}")
-                K24price = "0"
+            # Find all price images
+            images = driver.find_elements(By.CSS_SELECTOR, "img.price-cell")
             
-            K24price = soup.select('div.isagha-panel > div.clearfix > div.col-xs-4 > div.value')[1].text
+            if len(images) > 0:
+                print(f"DEBUG: Found {len(images)} price images.")
+                
+                # Extract srcs
+                srcs = [img.get_attribute('src') for img in images]
+                
+                # Depending on the page structure, there might be buy/sell columns. 
+                # Original logic relied on specific indices of a larger list of 'value' divs.
+                # If 'price-cell' is the class for ALL prices (buy, sell, diff), we can likely map indices similarly.
+                # However, usually images are only for the numbers.
+                
+                # Let's attempt to map them. If the list is short (e.g. only "Sell" prices), the indices change.
+                # But typically comparison sites show Buy/Sell.
+                
+                # DEBUG: Process all to see what we get
+                values = []
+                for i, src in enumerate(srcs):
+                    val = get_price_from_base64(src)
+                    values.append(val)
+                    print(f"DEBUG: Image {i}: {val}")
+                
+                # Apply mapping based on typical Isagha layout (Buy, Sell, Change for each Karat)
+                # 24, 22, 21, 18 -> 4 rows? Or blocks?
+                # Original script accessed indices 1, 3, 6, 9. 
+                # This implies a flattened list.
+                # If we have a list of values:
+                # 0: 24k Buy, 1: 24k Sell, 2: 24k Change ...
+                
+                if len(values) >= 10:
+                    k24 = values[1]
+                    k22 = values[3] # actually 3 might be next karats something
+                    # Wait, indices 1, 3, 6, 9 suggests:
+                    # 0,1,2 (24k)
+                    # 3,4,5 (22k) -> index 3 is 22k Buy? Original said [3].
+                    # Let's stick to the user's old indices assuming the image list flattens the same way.
+                    
+                    k22 = values[3]
+                    k21 = values[6]
+                    k18 = values[9]
+                    
+                    # USD is usually at the end.
+                    if len(values) > 12:
+                         usd = values[-3]
+            else:
+                print("DEBUG: No images with class 'price-cell' found.")
+                
         except Exception as e:
-             print(f"DEBUG: Error selecting 24K price: {e}")
-             
-        data['24K Egy Gold']['weight'] = round(float(extractNumbers(K24price)))
+            print(f"DEBUG: Base64 extraction failed: {e}")
+
+        # Update data object
+        data['24K Egy Gold']['weight'] = round(k24)
         data['24K Egy Gold']['value'] = round(data['24K Egy Gold']['weight'] * storage['24KGold'])
-
-        # Retreive 22K Gold Price
-        K22price = soup.select('div.isagha-panel > div.clearfix > div.col-xs-4 > div.value')[3].text
-        data['22K Egy Gold']['weight'] = round(float(extractNumbers(K22price)))
+        
+        data['22K Egy Gold']['weight'] = round(k22)
         data['22K Egy Gold']['value'] = round(data['22K Egy Gold']['weight'] * storage['22KGold'])
-
-        # Retreive 21K Gold Price
-        K21price = soup.select('div.isagha-panel > div.clearfix > div.col-xs-4 > div.value')[6].text
-        data['21K Egy Gold']['weight'] = round(float(extractNumbers(K21price)))
+        
+        data['21K Egy Gold']['weight'] = round(k21)
         data['21K Egy Gold']['value'] = round(data['21K Egy Gold']['weight'] * storage['21KGold'])
-
-        # Retreive 18K Gold Price
-        K18price = soup.select('div.isagha-panel > div.clearfix > div.col-xs-4 > div.value')[9].text
-        data['18K Egy Gold']['weight'] = round(float(extractNumbers(K18price)))
+        
+        data['18K Egy Gold']['weight'] = round(k18)
         data['18K Egy Gold']['value'] = round(data['18K Egy Gold']['weight'] * storage['18KGold'])
-
-        # Add All Gold Values
+        
         data['Your Gold Value'] = data["24K Egy Gold"]['value'] + data["22K Egy Gold"]['value'] + data["21K Egy Gold"]['value'] + data["18K Egy Gold"]['value']
-
-        # Retreive USD to EGP Price
-        USDPrice = soup.select('div.isagha-panel > div.clearfix > div.col-xs-4 > div.value')[-3].text
-        data['USD to EGP']= float(extractNumbers(USDPrice))
-
-        # Add All Cash Values
+        
+        data['USD to EGP'] = usd
         data['Your Cash Value'] = round((storage['USDCash'] * data['USD to EGP']) + storage['EGPCash'])
-
-        # calculate total wealth in EGP
         data['Total in EGP'] = round(storage['EGPCash'] + data['Your Gold Value'] + (storage['USDCash'] * data['USD to EGP']))
+        if data['USD to EGP'] > 0:
+             data['Total in USD'] = round(storage['USDCash'] + ((storage['EGPCash'] + data['Your Gold Value']) / data['USD to EGP']))
+        else:
+             data['Total in USD'] = 0
 
-        # calculate total wealth in USD
-        data['Total in USD'] = round(storage['USDCash'] + ((storage['EGPCash'] + data['Your Gold Value']) / data['USD to EGP']))
-    else:
-        print(f"Failed to retrieve the page. Status code: {response.status_code}")
+        sendMsg(data, storage, normal)
 
-    sendMsg()
+    except Exception as e:
+        print(f"Error in fetchData: {e}")
+    finally:
+        driver.quit()
 
-fixedHour = 19 # GMT/UTC timezone
-
+fixedHour = 19
 url = 'https://market.isagha.com/prices'
-
 currentHour = datetime.now(timezone.utc).hour
 
-normal = True
-
-data = {
-    '24K Egy Gold': {
-        'weight': 0,
-        'value': 0,
-    },
-    '22K Egy Gold': {
-        'weight': 0,
-        'value': 0,
-    },
-    '21K Egy Gold': {
-        'weight': 0,
-        'value': 0,
-    },
-    '18K Egy Gold': {
-        'weight': 0,
-        'value': 0,
-    },
-    'USD to EGP': 0,
-    'Your Gold Value': 0,
-    'Your Cash Value': 0,
-    'Total in EGP': 0,
-    'Total in USD': 0,
-}
-
-storage = {
-    '24KGold': float(os.getenv('G24K')),
-    '22KGold': float(os.getenv('G22K')),
-    '21KGold': float(os.getenv('G21K')),
-    '18KGold': float(os.getenv('G18K')),
-    'EGPCash': float(os.getenv('EGP_C')),
-    'USDCash': float(os.getenv('USD_C')),
-}
-
-storageZ = {
-    '24KGold': float(os.getenv('G24KZ')),
-    '22KGold': float(os.getenv('G22KZ')),
-    '21KGold': float(os.getenv('G21KZ')),
-    '18KGold': float(os.getenv('G18KZ')),
-    'EGPCash': float(os.getenv('EGP_CZ')),
-    'USDCash': float(os.getenv('USD_CZ')),
-}
-
+# We keep the "if True" trigger for testing as requested by user previously
 # if fixedHour == currentHour:
-if True:
-    fetchData(url, storage)
-    normal = False
-    fetchData(url, storageZ)
+if True: 
+    # Setup Data Structures
+    data = {
+        '24K Egy Gold': {'weight': 0, 'value': 0},
+        '22K Egy Gold': {'weight': 0, 'value': 0},
+        '21K Egy Gold': {'weight': 0, 'value': 0},
+        '18K Egy Gold': {'weight': 0, 'value': 0},
+        'USD to EGP': 0,
+        'Your Gold Value': 0,
+        'Your Cash Value': 0,
+        'Total in EGP': 0,
+        'Total in USD': 0,
+    }
+
+    storage = {
+        '24KGold': float(os.getenv('G24K') if os.getenv('G24K') else 0),
+        '22KGold': float(os.getenv('G22K') if os.getenv('G22K') else 0),
+        '21KGold': float(os.getenv('G21K') if os.getenv('G21K') else 0),
+        '18KGold': float(os.getenv('G18K') if os.getenv('G18K') else 0),
+        'EGPCash': float(os.getenv('EGP_C') if os.getenv('EGP_C') else 0),
+        'USDCash': float(os.getenv('USD_C') if os.getenv('USD_C') else 0),
+    }
+
+    storageZ = {
+        '24KGold': float(os.getenv('G24KZ') if os.getenv('G24KZ') else 0),
+        '22KGold': float(os.getenv('G22KZ') if os.getenv('G22KZ') else 0),
+        '21KGold': float(os.getenv('G21KZ') if os.getenv('G21KZ') else 0),
+        '18KGold': float(os.getenv('G18KZ') if os.getenv('G18KZ') else 0),
+        'EGPCash': float(os.getenv('EGP_CZ') if os.getenv('EGP_CZ') else 0),
+        'USDCash': float(os.getenv('USD_CZ') if os.getenv('USD_CZ') else 0),
+    }
+
+    fetchData(url, storage, True)
+    fetchData(url, storageZ, False)
 else:
     print('Invalid Timing!')

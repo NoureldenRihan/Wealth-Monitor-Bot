@@ -1,3 +1,7 @@
 telebot
 beautifulsoup4
 requests
+selenium
+pytesseract
+Pillow
+webdriver-manager
