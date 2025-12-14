@@ -64,7 +64,7 @@ Total Wealth (USD): {data["Total in USD"]} USD
 
 import base64
 
-def get_price_from_base64(base64_string):
+def get_price_from_base64(base64_string, idx):
     try:
         if ',' in base64_string:
             base64_string = base64_string.split(',')[1]
@@ -72,14 +72,19 @@ def get_price_from_base64(base64_string):
         image_data = base64.b64decode(base64_string)
         image = Image.open(io.BytesIO(image_data))
         
-        # Configure Tesseract to look for a single line of text/numbers
-        # psm 7 = Treat the image as a single text line.
+        # Configure Tesseract
         text = pytesseract.image_to_string(image, config='--psm 7 -c tessedit_char_whitelist=0123456789.')
+        extracted_value = extractNumbers(text)
         
-        print(f"DEBUG: OCR on base64 image result: '{text.strip()}'")
-        return float(extractNumbers(text))
+        # Save image for debug
+        filename = f"ocr_img_{idx}_val_{extracted_value}.png"
+        image.save(filename)
+        print(f"DEBUG: Saved image to {filename}")
+        
+        print(f"DEBUG: OCR on base64 image {idx} result: '{text.strip()}'")
+        return float(extracted_value) if extracted_value else 0.0
     except Exception as e:
-        print(f"DEBUG: Error processing base64 image: {e}")
+        print(f"DEBUG: Error processing base64 image {idx}: {e}")
         return 0.0
 
 def fetchData(url, storage, normal):
@@ -106,10 +111,6 @@ def fetchData(url, storage, normal):
         k18 = 0
         usd = 0
         
-        # Strategy: Look for the specific base64 images
-        # We assume the order matches the previous scraping logic indices
-        # [1] -> 24K, [3] -> 22K, [6] -> 21K, [9] -> 18K, [-3] -> USD
-        
         try:
             # Find all price images
             images = driver.find_elements(By.CSS_SELECTOR, "img.price-cell")
@@ -120,41 +121,19 @@ def fetchData(url, storage, normal):
                 # Extract srcs
                 srcs = [img.get_attribute('src') for img in images]
                 
-                # Depending on the page structure, there might be buy/sell columns. 
-                # Original logic relied on specific indices of a larger list of 'value' divs.
-                # If 'price-cell' is the class for ALL prices (buy, sell, diff), we can likely map indices similarly.
-                # However, usually images are only for the numbers.
-                
-                # Let's attempt to map them. If the list is short (e.g. only "Sell" prices), the indices change.
-                # But typically comparison sites show Buy/Sell.
-                
                 # DEBUG: Process all to see what we get
                 values = []
                 for i, src in enumerate(srcs):
-                    val = get_price_from_base64(src)
+                    val = get_price_from_base64(src, i)
                     values.append(val)
                     print(f"DEBUG: Image {i}: {val}")
                 
-                # Apply mapping based on typical Isagha layout (Buy, Sell, Change for each Karat)
-                # 24, 22, 21, 18 -> 4 rows? Or blocks?
-                # Original script accessed indices 1, 3, 6, 9. 
-                # This implies a flattened list.
-                # If we have a list of values:
-                # 0: 24k Buy, 1: 24k Sell, 2: 24k Change ...
-                
                 if len(values) >= 10:
                     k24 = values[1]
-                    k22 = values[3] # actually 3 might be next karats something
-                    # Wait, indices 1, 3, 6, 9 suggests:
-                    # 0,1,2 (24k)
-                    # 3,4,5 (22k) -> index 3 is 22k Buy? Original said [3].
-                    # Let's stick to the user's old indices assuming the image list flattens the same way.
-                    
                     k22 = values[3]
                     k21 = values[6]
                     k18 = values[9]
                     
-                    # USD is usually at the end.
                     if len(values) > 12:
                          usd = values[-3]
             else:
