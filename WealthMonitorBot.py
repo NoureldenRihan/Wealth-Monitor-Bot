@@ -184,8 +184,7 @@ fixedHour = 19
 url = 'https://market.isagha.com/prices'
 currentHour = datetime.now(timezone.utc).hour
 
-# if fixedHour == currentHour: 
-if True: 
+if fixedHour == currentHour: 
     # Setup Data Structures
     data = {
         '24K Egy Gold': {'weight': 0, 'value': 0},
